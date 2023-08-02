@@ -1,0 +1,11 @@
+server1:
+  ip: "192.168.10.158"
+  description: front server
+  enabled: true
+  pins:
+    - name: router-fan
+      position: 1
+    - name: battery-fan
+      position: 2
+    - name: back-cam
+      position: 3

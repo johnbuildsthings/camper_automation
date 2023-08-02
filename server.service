@@ -1,0 +1,17 @@
+[Unit]
+Description=Pi Service
+Wants=network-online.target
+After=syslog.target network.target nss-lookup.target network-online.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=zero
+Group=zero
+WorkingDirectory=/home/zero
+ExecStart=/home/zero/server_start.sh
+KillSignal=SIGINT
