@@ -3,19 +3,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type servers map[string]Server
 type Server struct {
-	Ip          string `yaml:"ip"`
-	Description string `yaml:"description"`
-	Enabled     bool   `yaml:"enabled"`
+	Ip          string `json:"ip"`
+	Description string `json:"description"`
+	Enabled     bool   `json:"enabled"`
 	Pins        []struct {
-		Name      string `yaml:"name"`
-		Posistion int    `yaml:"position"`
+		Name      string `json:"name"`
+		Posistion int    `json:"position"`
 	}
 }
 type Body struct {
@@ -58,24 +57,40 @@ func off(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "off\n")
 }
 
-func getConfig(server string) Server {
-	yfile, err := ioutil.ReadFile("servers.yaml")
+func config(w http.ResponseWriter, req *http.Request) {
+	sconfig := readConfig()
+	r, err := json.Marshal(sconfig)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Fprintf(w, "there was an error\n")
+	}
+	fmt.Fprint(w, string(r))
+}
+
+func readConfig() servers {
+	yfile, err := os.ReadFile("servers.json")
 
 	if err != nil {
 		panic(err)
 	}
 	config := servers{}
-	err2 := yaml.Unmarshal(yfile, &config)
+	err2 := json.Unmarshal(yfile, &config)
 
 	if err2 != nil {
 		panic(err2)
 	}
-	return config[server]
+	return config
+}
+
+func getConfig(key string) Server {
+	config := readConfig()
+	return config[key]
 }
 
 func main() {
 	http.HandleFunc("/on", on)
 	http.HandleFunc("/off", off)
+	http.HandleFunc("/config", config)
 
 	http.ListenAndServe(":8090", nil)
 }
